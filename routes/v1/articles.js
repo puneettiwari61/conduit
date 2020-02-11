@@ -5,6 +5,39 @@ var Comment = require('../../models/comment')
 var auth = require('../../modules/auth')
 var User = require('../../models/user')
 var slug = require('slug')
+var url = require('url')
+
+
+
+// List articles
+router.get('/',auth.verifyToken, async function(req,res){
+  try{
+  // var search = url.parse(req.url,true).query
+  var searchResult = await Article.find(url.parse(req.url,true).query).sort({"createdAt": -1})
+  res.json({searchResult})
+  } catch(error){
+    res.status(400).json(error)
+  }
+})
+
+
+//get feed
+router.get('/feed',auth.verifyToken, async function(req,res) {
+  try {
+    var currentUser = await User.findOne({"_id" : req.user.userID})
+    await Article.find({"author":{ $in: currentUser.following}}).sort({"createdAt": -1}).limit(20).exec((err,feed)=>{
+      if(err) return next(err)
+      res.json({feed})
+    })
+  }
+  catch(error) {
+    res.status(400).json(error)
+  }
+})
+
+
+
+
 //read one article
 router.get('/:slug', async function(req,res){
  try {
@@ -21,8 +54,11 @@ router.post('/',auth.verifyToken, async function(req,res){
   try {
     req.body.author = req.user.userID
     var newArticle = await Article.create(req.body)
-    var article = await Article.findById(newArticle.id).populate('author')
-    res.json({'successfully created':article })
+    var article = await Article.findById(newArticle.id).populate('author',['bio','username','image'])
+    var currentUser = await User.findById(req.user.userID)
+    article["favorited"] = await currentUser.favorites.includes(article.id)
+    // console.log(article)
+    res.json({article})
    } catch(error) {
      res.status(400).json(error)    
    } 
@@ -66,6 +102,7 @@ router.post('/:slug/comments',auth.verifyToken, async function(req,res){
     var article = await Article.findOne({slug: req.params.slug})
     if(!article) return res.status(400).json({error: 'slug or article dosent exist'})
     req.body.article = article._id
+    req.body.author = req.user.userID
     // console.log(req.body.article.id)
     var comment = await Comment.create(req.body)
     await Article.findOneAndUpdate({slug: req.params.slug},{$push: {"comments":comment._id}})
@@ -109,7 +146,7 @@ router.post('/:slug/comments',auth.verifyToken, async function(req,res){
  //favourite article
  router.post('/:slug/favorite',auth.verifyToken, async function(req,res){
    try {
-     var article = await Article.findOne({slug:req.params.slug})
+     var article = await Article.findOne({slug:req.params.slug}).populate('author',['bio','username','image'])
      var user = await User.findByIdAndUpdate(req.user.userID, { $push: { favorites: article._id} })
      res.json({ article })
    }
@@ -122,7 +159,7 @@ router.post('/:slug/comments',auth.verifyToken, async function(req,res){
  //unfavourite article
  router.delete('/:slug/favorite',auth.verifyToken, async function(req,res){
   try {
-    var article = await Article.findOne({slug:req.params.slug})
+    var article = await Article.findOne({slug:req.params.slug}).populate('author',['bio','username','image'])
     var user = await User.findByIdAndUpdate(req.user.userID, { $pull: { favorites: article._id} })
     res.json({ article })
   }
@@ -155,11 +192,9 @@ router.post('/:slug/comments',auth.verifyToken, async function(req,res){
 // })
 
 
-//List articles
-// router.get('/articles',auth.verifyToken, async function(req,res){
 
-// })
+
+
  
-//how many users favorited arcticle, FAVORITE count
 
 module.exports = router

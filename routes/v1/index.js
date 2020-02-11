@@ -18,7 +18,8 @@ router.put('/protected', auth.verifyToken,(req,res) => {
 //get current user
 router.get('/user', auth.verifyToken,async (req,res) => {
   try{
-  var user = await User.findById(req.user.userID,{"name":true,"email":true,favorites:true})
+  var user = await User.findById(req.user.userID,{"password":false})
+  // console.log(req.user)
   res.json({user})
   } catch(error){
     res.json({error})
@@ -54,11 +55,14 @@ router.get('/tags', async function(req,res){
 
 
 //get profile
-router.get('/profile/:username', async function(req,res){
+router.get('/profiles/:username',auth.verifyToken, async function(req,res){
   try{
-    var profile = await User.findOne({username: req.params.username},{_id:false,password:false})
+    var profile = await User.findOne({username: req.params.username},{password:false})
     if(!profile) return res.status(400).json({noprofile:'profile dosent exist'})
-    res.json({profile})
+    var currentUser = await User.findById(req.user.userID)
+    // console.log(req.user.following)
+    var following = currentUser.following.includes(profile.id)
+    res.json({profile: {username:profile.username,bio:profile.bio,image:profile.image,following:following}})
   }
   catch(error){
     res.status(400).json(error)
@@ -66,11 +70,12 @@ router.get('/profile/:username', async function(req,res){
 })
 
 //follow
-router.post('/profile/:username/follow',auth.verifyToken, async function(req,res){
+router.post('/profiles/:username/follow',auth.verifyToken, async function(req,res){
   try{
-    var following = await User.findOne({username: req.params.username})
-    var follower = await User.findByIdAndUpdate(req.user.userID,{$push: {"following": following._id}},{new:true}) 
-    res.json({profile: follower})
+    var profile = await User.findOne({username: req.params.username})
+    var currentUser = await User.findByIdAndUpdate(req.user.userID,{$push: {"following": profile._id}},{new:true}) 
+    var following = await currentUser.following.includes(profile.id)
+    res.json({profile: {username:profile.username,bio:profile.bio,image:profile.image,following:following}})
   }
   catch(error){
     res.status(400).json(error)
@@ -78,11 +83,12 @@ router.post('/profile/:username/follow',auth.verifyToken, async function(req,res
 })
 
 //unfollow
-router.delete('/profile/:username/follow',auth.verifyToken, async function(req,res){
+router.delete('/profiles/:username/follow',auth.verifyToken, async function(req,res){
   try{
-    var unfollowing = await User.findOne({username: req.params.username})
-    var unfollower = await User.findByIdAndUpdate(req.user.userID,{$pull: {"following": unfollowing._id}},{new:true}) 
-    res.json({profile: unfollower})
+    var profile = await User.findOne({username: req.params.username})
+    var currentUser = await User.findByIdAndUpdate(req.user.userID,{$pull: {"following": profile._id}},{new:true}) 
+    var following = await currentUser.following.includes(profile.id)
+    res.json({profile: {username:profile.username,bio:profile.bio,image:profile.image,following:following}})
   }
   catch(error){
     res.status(400).json(error)

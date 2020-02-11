@@ -7,7 +7,7 @@ router.get('/', auth.verifyToken, (req,res) => {
   res.json({ email: req.user.email, token: req.user.token })
 })
 
-router.post('/register', async (req,res) => {
+router.post('/', async (req,res) => {
   try {
     var user = await User.create(req.body);
     res.json(user)

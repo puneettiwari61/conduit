@@ -8,10 +8,12 @@ var userSchema = new Schema({
   email: {type: String, required: true, unique: true},
   password: {type: String, required: true},
   bio: {
-    type: String
+    type: String,
+    default: ''
   },
   image: {
-    type: String
+    type: String,
+    default:''
   },
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article' }],
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

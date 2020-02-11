@@ -21,12 +21,6 @@ articleSchema = new Schema({
   tagList:[{
     type: String
   }],
-  favorited:{
-    type: Boolean
-  },
-  favoritesCount:{
-    type: Number
-  },
   favoritesCount:{
     type: Number, 
     default: 0
