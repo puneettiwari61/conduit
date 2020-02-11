@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGO_URI,
   }
 )
 
-// var indexRouter = require('./routes/index');
+var indexRouter = require('./routes/index');
 // var usersRouter = require('./routes/users');
 var v1Router = require('./routes/v1')
 var app = express();
@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: false }));
 // app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/', indexRouter);
+app.use('/', indexRouter);
 // app.use('/users', usersRouter);
 app.use('/api/v1', v1Router);
 
