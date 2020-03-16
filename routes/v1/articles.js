@@ -10,7 +10,7 @@ var url = require('url')
 
 
 // List articles
-router.get('/',auth.verifyToken, async function(req,res){
+router.get('/', async function(req,res){
   try{
   // var search = url.parse(req.url,true).query
   var searchResult = await Article.find(url.parse(req.url,true).query).sort({"createdAt": -1})
