@@ -13,7 +13,7 @@ var url = require('url')
 router.get('/', async function(req,res){
   try{
   // var search = url.parse(req.url,true).query
-  var searchResult = await Article.find(url.parse(req.url,true).query).sort({"createdAt": -1})
+  var searchResult = await Article.find(url.parse(req.url,true).query).populate('author').sort({"createdAt": -1})
   res.json({searchResult})
   } catch(error){
     res.status(400).json(error)
