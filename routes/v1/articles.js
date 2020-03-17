@@ -6,6 +6,7 @@ var auth = require('../../modules/auth')
 var User = require('../../models/user')
 var slug = require('slug')
 var url = require('url')
+const jwt = require('jsonwebtoken');
 
 
 
