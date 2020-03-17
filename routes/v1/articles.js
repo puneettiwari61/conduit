@@ -43,9 +43,17 @@ router.get('/:slug', async function(req,res){
  try {
    var article = await Article.findOne({slug: req.params.slug}).populate('author')
    if(!article) return res.status(400).json({error: 'slug or article dosent exist'})
-   var currentUser = await User.findById(req.user.userID)
-   article["favorited"] = await currentUser.favorites.includes(article.id)
-   res.json({ article })
+   var token = req.headers['authorization'] || '';
+   if(token){
+       var payload = await jwt.verify(token,process.env.SECRET);
+       req.user = payload;
+       req.user.token = token
+       var currentUser = await User.findById(req.user.userID)
+       article["favorited"] = await currentUser.favorites.includes(article.id)
+       res.json({ article })
+      }
+
+    if(!token) return res.json({ article })
   } catch(error) {
     res.status(400).json(error)    
   } 
