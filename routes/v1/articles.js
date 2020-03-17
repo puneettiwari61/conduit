@@ -50,12 +50,15 @@ router.get('/:slug', async function(req,res){
        req.user = payload;
        req.user.token = token
        var currentUser = await User.findById(req.user.userID)
-       article["favorited"] = await currentUser.favorites.includes(article.id)
-       res.json({ article })
+
+       var favorited = await currentUser.favorites.includes(article.id)
+      //  console.log('heelo token',article)
+       return res.json({ article, favorited })
       }
 
     if(!token) return res.json({ article })
   } catch(error) {
+    console.log(error,"gvhjbknkkkkkkkkkkkkk")
     res.status(400).json(error)    
   } 
 })
