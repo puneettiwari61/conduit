@@ -43,6 +43,8 @@ router.get('/:slug', async function(req,res){
  try {
    var article = await Article.findOne({slug: req.params.slug}).populate('author')
    if(!article) return res.status(400).json({error: 'slug or article dosent exist'})
+   var currentUser = await User.findById(req.user.userID)
+   article["favorited"] = await currentUser.favorites.includes(article.id)
    res.json({ article })
   } catch(error) {
     res.status(400).json(error)    
