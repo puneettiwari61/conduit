@@ -75,6 +75,8 @@ router.post('/',auth.verifyToken, async function(req,res){
     var article = await Article.findOneAndUpdate({slug: req.params.slug},req.body,{new:true})
     // console.log(article)
     if(!article) return res.status(400).json({error: 'slug or article dosent exist'})
+    var currentUser = await User.findById(req.user.userID)
+    article["favorited"] = await currentUser.favorites.includes(article.id)
     res.json({ article })
    } catch(error) {
      res.status(400).json(error)    
