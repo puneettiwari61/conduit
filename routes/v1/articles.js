@@ -41,7 +41,7 @@ router.get('/feed',auth.verifyToken, async function(req,res) {
 //read one article
 router.get('/:slug', async function(req,res){
  try {
-   var article = await Article.findOne({slug: req.params.slug})
+   var article = await Article.findOne({slug: req.params.slug}).populate('author')
    if(!article) return res.status(400).json({error: 'slug or article dosent exist'})
    res.json({ article })
   } catch(error) {
