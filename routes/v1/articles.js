@@ -44,21 +44,18 @@ router.get('/:slug', async function(req,res){
  try {
    var article = await Article.findOne({slug: req.params.slug}).populate('author')
    if(!article) return res.status(400).json({error: 'slug or article dosent exist'})
-   var token = req.headers['authorization'] || '';
-   if(token){
-       var payload = await jwt.verify(token,process.env.SECRET);
+   var token = req.headers.authorization
+   if(token=="undefined") return res.json({ article })
+       var payload = jwt.verify(token,process.env.SECRET);
        req.user = payload;
        req.user.token = token
        var currentUser = await User.findById(req.user.userID)
 
        var favorited = await currentUser.favorites.includes(article.id)
       //  console.log('heelo token',article)
-       return res.json({ article, favorited })
-      }
-
-    if(!token) return res.json({ article })
+       res.json({ article, favorited })
   } catch(error) {
-    console.log(error,"gvhjbknkkkkkkkkkkkkk")
+    console.log(error)
     res.status(400).json(error)    
   } 
 })
