@@ -1,35 +1,38 @@
-var mongoose = require('mongoose');
+var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
-var  bcrypt = require('bcryptjs');
+var bcrypt = require("bcryptjs");
 
-var userSchema = new Schema({
-  username: {type: String, lowercase: true, unique: true, required: true},
-  email: {type: String, required: true, unique: true},
-  password: {type: String, required: true},
-  bio: {
-    type: String,
-    default: ''
+var userSchema = new Schema(
+  {
+    username: { type: String, lowercase: true, unique: true, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    bio: {
+      type: String,
+      default: ""
+    },
+    image: {
+      type: String,
+      default: ""
+    },
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    myArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }]
   },
-  image: {
-    type: String,
-    default:''
-  },
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article' }],
-  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-userSchema.pre('save', async function(next){
-  if(this.password && this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10)
-    next()
+userSchema.pre("save", async function(next) {
+  if (this.password && this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
   }
   next();
-})
+});
 
 userSchema.methods.verifyPassword = async function(password) {
-  return await bcrypt.compare(password, this.password)
-}
+  return await bcrypt.compare(password, this.password);
+};
 
-
-module.exports = mongoose.model('User',userSchema)
+module.exports = mongoose.model("User", userSchema);
