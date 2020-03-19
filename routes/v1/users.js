@@ -4,9 +4,6 @@ var User = require("../../models/user");
 var auth = require("../../modules/auth");
 
 router.get("/", auth.verifyToken, (req, res) => {
-  if (!req.user) {
-    return res.error("no user found");
-  }
   res.json({ email: req.user.email, token: req.user.token });
 });
 
