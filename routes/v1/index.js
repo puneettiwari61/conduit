@@ -57,7 +57,7 @@ router.get("/tags", async function(req, res) {
 });
 
 //get profile
-router.get("/profiles/:username", auth.verifyToken, async function(req, res) {
+router.get("/profiles/:username", async function(req, res) {
   try {
     var profile = await User.findOne(
       { username: req.params.username },
