@@ -5,6 +5,7 @@ var Article = require("../../models/article");
 var articleRouter = require("./articles");
 var auth = require("../../modules/auth");
 var User = require("./../../models/user");
+const jwt = require("jsonwebtoken");
 
 router.get("/", function(req, res, next) {
   res.json({ index: true });
@@ -62,21 +63,27 @@ router.get("/profiles/:username", async function(req, res) {
     var profile = await User.findOne(
       { username: req.params.username },
       { password: false }
-    );
-    if (!profile)
+    ).populate({
+      path: "myArticles",
+      populate: { path: "author" }
+    });
+    if (!profile) {
       return res.status(400).json({ noprofile: "profile dosent exist" });
+    }
+    var token = req.headers.authorization;
+    if (token == "undefined") return res.json({ profile });
+    var payload = jwt.verify(token, process.env.SECRET);
+    req.user = payload;
+    req.user.token = token;
     var currentUser = await User.findById(req.user.userID);
     // console.log(req.user.following)
     var following = currentUser.following.includes(profile.id);
     res.json({
-      profile: {
-        username: profile.username,
-        bio: profile.bio,
-        image: profile.image,
-        following: following
-      }
+      profile,
+      following
     });
   } catch (error) {
+    console.log(error, "eroor");
     res.status(400).json(error);
   }
 });
