@@ -63,10 +63,12 @@ router.get("/profiles/:username", async function(req, res) {
     var profile = await User.findOne(
       { username: req.params.username },
       { password: false }
-    ).populate({
-      path: "myArticles",
-      populate: { path: "author" }
-    });
+    )
+      .populate({
+        path: "myArticles",
+        populate: { path: "author" }
+      })
+      .populate("favorites");
     if (!profile) {
       return res.status(400).json({ noprofile: "profile dosent exist" });
     }
