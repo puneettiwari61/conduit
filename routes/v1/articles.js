@@ -44,7 +44,7 @@ router.get("/:slug", async function(req, res) {
       .populate({
         path: "author"
       })
-      .populate("comments");
+      .populate({ path: "comments", populate: { path: "author" } });
     if (!article)
       return res.status(400).json({ error: "slug or article dosent exist" });
     var token = req.headers.authorization;
@@ -169,10 +169,15 @@ router.delete("/:slug/comments/:id", auth.verifyToken, async function(
   res
 ) {
   try {
-    var removedComment = await Comment.findByIdAndRemove(req.params.id);
-    if (!removedComment)
-      return res.status(400).json({ error: "comments doesn't exist" });
-    res.json({ comment: "comment removed" });
+    var comment = await Comment.findById(req.params.id);
+    if (req.user.userID == comment.author) {
+      var removedComment = await Comment.findByIdAndRemove(req.params.id);
+      if (!removedComment)
+        return res.status(400).json({ error: "comments doesn't exist" });
+      res.json({ comment: "comment removed" });
+    } else {
+      res.status(400).json({ success: false, msg: "you are not authorized" });
+    }
   } catch (error) {
     res.status(400).json(error);
   }
